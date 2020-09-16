@@ -1,7 +1,20 @@
 h1 Your images
+p You have login as #{username}
 ul
   each img in (images || [])
-    a(href='#')
-      li img.name
-
+    a(href=img._id)
+      li
+        div
+          =img.name
+          form(action="./delete/"+img._id method="post" onsubmit="return confirm('Are you sure you want to delete the image?')")
+            input(type="submit" value="Delete")
+h1 Public images
+ul
+  each img in (publicImages || [])
+    a(href=img._id)
+      li
+        div
+          =img.name + ", uploaded by " + img.username
 a(href="./upload") Upload page
+br
+a(href="/users/logout") Log Out

@@ -4,5 +4,7 @@ form(method="post" enctype="multipart/form-data" action="./upload")
   div
     label(for="file") Choose file to upload
     input(type="file" id="image" name="image" accept="image/png, image/jpeg")
+    input(type="checkbox" name="public")
+    label(for="public")  Public    
   div
     button(type="submit") submit

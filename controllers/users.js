@@ -2,19 +2,19 @@ var express = require("express");
 var hash = require("pbkdf2-password")();
 var { v4: uuidV4 } = require("uuid");
 
-module.exports = (store) => {
+module.exports = (usersStore) => {
   const createUser = async (username, password) =>
     new Promise((res, rej) => {
       hash({ password }, function (err, pass, salt, hash) {
         if (err) {
           throw rej(err);
         }
-        store.insert({ name: username, hash, salt }).then(res);
+        usersStore.insert({ name: username, hash, salt }).then(res);
       });
     });
 
   const userAlreadyExists = async (username) => {
-    return (await store.find(username)) != null;
+    return (await usersStore.find(username)) != null;
   };
 
   const compareHash = async (password, salt) => {
@@ -27,16 +27,16 @@ module.exports = (store) => {
         rej(new Error("Invalid passowrd"));
       });
     });
-  }
+  };
 
   const authenticate = async (username, password) => {
-    let user = await store.find(username);
+    let user = await usersStore.find(username);
     if (!user) {
       return fn(new Error("Cannot find user " + username));
     }
-    await compareHash(password, user.salt)
+    await compareHash(password, user.salt);
     const newLoginID = uuidV4();
-    await store.updateLoginID(username, newLoginID)
+    await usersStore.updateLoginID(username, newLoginID);
     user.loginID = newLoginID;
     return user;
   };
@@ -67,6 +67,16 @@ module.exports = (store) => {
     }
   });
 
+  router.get("/logout", async (req, res) => {
+    if (await usersStore.isCorrectLoginID(req)) {
+      res.clearCookie("loginID");
+      res.clearCookie("username");
+      res.redirect("login");
+    } else {
+      res.redirect("/error", { err: "Not authorized" });
+    }
+  });
+
   router.post("/login", async (req, res) => {
     try {
       let user = await authenticate(req.body.username, req.body.password);
@@ -80,8 +90,8 @@ module.exports = (store) => {
           ' You may now access <a href="../images">/images</a>.';
         res.redirect("/images");
       });
-      res.cookie('loginID', user.loginID)
-      res.cookie('username', user.name)
+      res.cookie("loginID", user.loginID);
+      res.cookie("username", user.name);
     } catch (err) {
       req.session.error =
         "Authenticate failed, please check your username and password";

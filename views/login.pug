@@ -1,16 +1,20 @@
-h Log in
+doctype html
+html
+  include includes/head.pug
+  body
+    h Log in
 
-if err
-  p
-    = err
-form(method='post' action='./login')
-  p
-    label Username:
-    input(type='text' name='username')
-  p
-    label Password:
-    input(type='text' name='password')
-  p
-    input(type='submit' value='Login')
+    if err
+      p
+        = err
+    form(method='post' action='./login')
+      p
+        label Username:
+        input(type='text' name='username')
+      p
+        label Password:
+        input(type='password' name='password')
+      p
+        input(type='submit' value='Login' class='btn btn-primary')
 
-a(href="./create") Create
+    a(href="./create") Create

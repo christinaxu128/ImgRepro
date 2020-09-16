@@ -21,7 +21,7 @@ class UsersMemStore {
     return new Promise((res, rej) => {
       this.#userMaps.get(username).loginID = loginID;
       res();
-    })
+    });
   }
 }
 
@@ -45,7 +45,18 @@ class UsersMongoDB {
   }
 
   async updateLoginID(username, loginID) {
-    await UsersMongoDB.User.updateOne({ username }, { loginID });
+    console.debug(`Updating login ID ${loginID} for ${username}`);
+    await UsersMongoDB.User.updateOne({ name: username }, { loginID });
+  }
+
+  async isCorrectLoginID(req) {
+    const loginID = req.cookies.loginID;
+    const username = req.cookies.username;
+    if (!loginID || !username) {
+      return false;
+    }
+    console.debug(`Checking log in ID ${loginID} for ${username}`);
+    return (await this.find(username)).loginID == loginID;
   }
 }
 
